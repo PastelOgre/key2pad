@@ -276,7 +276,7 @@ int main ()
         printf("Rebind failed. Press Ctrl+C or close window to exit.\n");
     while (GetMessage(&msg, NULL, 0, 0))
     {
-        usleep(16000);
+        usleep(1);
     }
 
     return 0;
