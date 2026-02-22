@@ -21,6 +21,12 @@ uint32_t button_b=0;
 uint32_t button_y=0;
 uint32_t shoulder_left=0;
 uint32_t shoulder_right=0;
+uint32_t button_start=0;
+uint32_t button_back=0;
+uint32_t thumb_left=0;
+uint32_t thumb_right=0;
+uint32_t button_guide=0;
+
 
 void ffstd_string_split(std::vector<std::string>* list, const std::string* str, char split_token)
 {
@@ -115,6 +121,36 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 vigem_target_x360_update(client, pad, report);
                 return 1; // block original key
             }
+            if(kbd->vkCode == button_start)
+            {
+                report.wButtons |= XUSB_GAMEPAD_START;
+                vigem_target_x360_update(client, pad, report);
+                return 1; // block original key
+            }
+            if(kbd->vkCode == button_back)
+            {
+                report.wButtons |= XUSB_GAMEPAD_BACK;
+                vigem_target_x360_update(client, pad, report);
+                return 1; // block original key
+            }
+            if(kbd->vkCode == thumb_left)
+            {
+                report.wButtons |= XUSB_GAMEPAD_LEFT_THUMB;
+                vigem_target_x360_update(client, pad, report);
+                return 1; // block original key
+            }
+            if(kbd->vkCode == thumb_right)
+            {
+                report.wButtons |= XUSB_GAMEPAD_RIGHT_THUMB;
+                vigem_target_x360_update(client, pad, report);
+                return 1; // block original key
+            }
+            if(kbd->vkCode == button_guide)
+            {
+                report.wButtons |= XUSB_GAMEPAD_GUIDE;
+                vigem_target_x360_update(client, pad, report);
+                return 1; // block original key
+            }
         }
         else if(wParam == WM_KEYUP)
         {
@@ -178,6 +214,36 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 vigem_target_x360_update(client, pad, report);
                 return 1; // block original key
             }
+            if(kbd->vkCode == button_start)
+            {
+                report.wButtons &= ~XUSB_GAMEPAD_START;
+                vigem_target_x360_update(client, pad, report);
+                return 1; // block original key
+            }
+            if(kbd->vkCode == button_back)
+            {
+                report.wButtons &= ~XUSB_GAMEPAD_BACK;
+                vigem_target_x360_update(client, pad, report);
+                return 1; // block original key
+            }
+            if(kbd->vkCode == thumb_left)
+            {
+                report.wButtons &= ~XUSB_GAMEPAD_LEFT_THUMB;
+                vigem_target_x360_update(client, pad, report);
+                return 1; // block original key
+            }
+            if(kbd->vkCode == thumb_right)
+            {
+                report.wButtons &= ~XUSB_GAMEPAD_RIGHT_THUMB;
+                vigem_target_x360_update(client, pad, report);
+                return 1; // block original key
+            }
+            if(kbd->vkCode == button_guide)
+            {
+                report.wButtons &= ~XUSB_GAMEPAD_GUIDE;
+                vigem_target_x360_update(client, pad, report);
+                return 1; // block original key
+            }
         }
     }
     return CallNextHookEx(hook, nCode, wParam, lParam);
@@ -212,23 +278,31 @@ int main ()
         }
         std::string key = tokens[0];
         std::string value = tokens[1];
+        if(value.size() > 0 && value[value.size()-1] == '\n')
+            value.pop_back();
         if(value.size() == 0)
+            continue;
+        if(value.size() == 1)
         {
-            printf("Invalid line in button_config.ini: %s\n", line);
-            printf("Value cannot be empty.\n");
-            printf("Please fix the ini file and try again.\n");
-            rebind_failed = 1;
-            break;
-        }
-        if(islower(value[0]))
-        {
-            value[0] = toupper(value[0]);
-        }
-        if(isupper(value[0]))
-        {
-            char vstr[64];
-            sprintf(vstr, "0x%x", value[0]);
-            value = vstr;
+            if(isdigit(value[0]))
+            {
+                char vstr[64];
+                sprintf(vstr, "0x%x", value[0]);
+                value = vstr;
+            }
+            else
+            {
+                if(islower(value[0]))
+                {
+                    value[0] = toupper(value[0]);
+                }
+                if(isupper(value[0]))
+                {
+                    char vstr[64];
+                    sprintf(vstr, "0x%x", value[0]);
+                    value = vstr;
+                }
+            }
         }
         if(key == "dpad_left")
             dpad_left = (uint32_t)strtol(value.c_str(), NULL, 16);
@@ -250,6 +324,16 @@ int main ()
             shoulder_left = (uint32_t)strtol(value.c_str(), NULL, 16);
         else if(key == "shoulder_right")
             shoulder_right = (uint32_t)strtol(value.c_str(), NULL, 16);
+        else if(key == "button_start")
+            button_start = (uint32_t)strtol(value.c_str(), NULL, 16);
+        else if(key == "button_back")
+            button_back = (uint32_t)strtol(value.c_str(), NULL, 16);
+        else if(key == "thumb_left")
+            thumb_left = (uint32_t)strtol(value.c_str(), NULL, 16);
+        else if(key == "thumb_right")
+            thumb_right = (uint32_t)strtol(value.c_str(), NULL, 16);
+        else if(key == "button_guide")
+            button_guide = (uint32_t)strtol(value.c_str(), NULL, 16);
     }
     fclose(fp);
     client = vigem_alloc();
